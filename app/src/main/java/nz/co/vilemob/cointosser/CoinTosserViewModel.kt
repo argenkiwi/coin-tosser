@@ -1,26 +1,38 @@
 package nz.co.vilemob.cointosser
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.ViewModel
-import io.reactivex.BackpressureStrategy
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class CoinTosserViewModel : ViewModel() {
-    private val model = CoinTosserModel()
-    private val disposable = model.subscribe()
 
-    val liveState: LiveData<CoinTosserState> =
-            LiveDataReactiveStreams.fromPublisher(
-                    model.stateObservable
-                            .toFlowable(BackpressureStrategy.LATEST)
-            )
+    private val events = MutableSharedFlow<CoinTosserEvent>()
+    private val state = MutableStateFlow(CoinTosserState())
 
-    override fun onCleared() {
-        super.onCleared()
-        disposable.dispose()
+    val liveState: LiveData<CoinTosserState> = state.asLiveData()
+
+    private val reactor = CoinTosserReactor()
+
+    init {
+
+        viewModelScope.launch {
+
+            launch {
+                events.mapNotNull(reactor::react)
+                        .collect { launch { events.emit(it) } }
+            }
+
+            launch {
+                events.map { reduce(state.value, it) }
+                        .collect(state::emit)
+            }
+        }
     }
 
     fun onToss() {
-        model.publish(CoinTosserEvent.Toss)
+        viewModelScope.launch { events.emit(CoinTosserEvent.Toss) }
     }
 }
