@@ -1,8 +1,8 @@
 package nz.co.vilemob.cointosser
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.LiveDataReactiveStreams
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataReactiveStreams
+import androidx.lifecycle.ViewModel
 import io.reactivex.BackpressureStrategy
 
 class CoinTosserViewModel : ViewModel() {

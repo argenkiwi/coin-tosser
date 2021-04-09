@@ -9,8 +9,7 @@ class CoinTosserModel
         CoinTosserState(),
         CoinTosserReducer
 ) {
-    private val tossEventsObservable = eventObservable
-            .ofType(CoinTosserEvent.Toss::class.java)
+    private val tossEventsObservable = eventObservable.ofType(CoinTosserEvent.Toss::class.java)
 
     private val tossSideEffect = Single
             .timer(1, TimeUnit.SECONDS)
